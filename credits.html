@@ -3,20 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NCERT Mastery</title>
+    <title>NCERT Mastery | Credits</title>
     <link rel="stylesheet" href="./stylesheets/google-font.css">
-    <!--W3CSS Library-->
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
     <link rel="stylesheet" href="./w3-color-themes/2016-serenity.css">
-    <!--Google Font API-->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montenegrin+Gothic+One&family=Yuyu+Short&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background: #f5f7fb;
+        }
+
+        .page-shell {
+            max-width: 900px;
+            margin: 24px auto;
+            padding: 16px 18px;
+        }
+
+        .credit-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .nav-links a {
+            margin-left: 6px;
+            margin-right: 6px;
+            text-decoration: none;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .profile-photo {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+            margin-bottom: 16px;
+            background: #dce7f1;
+        }
+
+        .profile-actions a {
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        .content-block {
+            padding: 28px 24px;
+        }
+
+        @media (max-width: 600px) {
+            .page-shell {
+                padding: 10px;
+                margin: 12px auto;
+            }
+
+            .content-block {
+                padding: 18px;
+            }
+
+            .profile-photo {
+                width: 120px;
+                height: 120px;
+            }
+
+            .nav-links a {
+                margin: 2px 0;
+            }
+        }
+    </style>
 </head>
 <body class="montenegrin-gothic-one-regular">
     <div class="w3-container w3-theme-d3">
-        <span class="w3-xxxlarge">NCERT Mastery</span>
+        <div class="w3-bar w3-theme-d3">
+            <span class="w3-bar-item w3-xxxlarge">NCERT Mastery</span>
+            <div class="w3-bar-item w3-right nav-links">
+                <a href="./index.html" class="w3-button w3-theme-l2 w3-round">Home</a>
+                <a href="./get-books.html" class="w3-button w3-theme-l2 w3-round">Books</a>
+                <a href="./credits.html" class="w3-button w3-theme-l2 w3-round">Credits</a>
+            </div>
+        </div>
     </div>
 
+    <div class="page-shell">
+        <div class="w3-card credit-card">
+            <div class="w3-container w3-theme-l4 content-block">
+                <div style="text-align: center;">
+                    <img src="https://avatars.githubusercontent.com/u/120187027?v=4" alt="Raghu" class="profile-photo" onerror="this.src='https://via.placeholder.com/140?text=R'">
+                    <h2 class="w3-margin-bottom">About Me</h2>
+                    <p class="w3-large">I’m Dibyojit Datta, a student and aspiring programmer who loves learning how computers work and building useful tools along the way. I’m interested in web development, open source, Linux, and creating projects that solve real problems with simple, thoughtful design.</p>
+                    <div class="profile-actions">
+                        <a href="https://github.com/crazyrag778" target="_blank" rel="noopener noreferrer" class="w3-button w3-theme-d2 w3-round">Visit GitHub</a>
+                        <a href="https://crazyrag778.github.io" target="_blank" rel="noopener noreferrer" class="w3-button w3-theme w3-round">Visit Website</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

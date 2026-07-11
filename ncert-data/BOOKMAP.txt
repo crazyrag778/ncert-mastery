@@ -1,3 +1,4 @@
 Class 11-
     Chemistry: 
     Part1=kech1dd;
+    Part2=kech2dd
