@@ -6,7 +6,7 @@
     <title>NCERT Mastery PDFs</title>
     <link rel="stylesheet" href="../../stylesheets/google-font.css">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
-    <link rel="stylesheet" href="../../w3-color-themes/2016-serenity.css">
+    <link rel="stylesheet" href="../../stylesheets/w3css-color-pallete.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montenegrin+Gothic+One&family=Yuyu+Short&display=swap" rel="stylesheet">
@@ -58,8 +58,14 @@
             background: #f1f5f9;
         }
 
+        .pdf-toolbar button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         #pdf-viewer {
             min-height: 72vh;
+            max-height: 78vh;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             overflow: auto;
@@ -68,11 +74,16 @@
             text-align: center;
         }
 
-        canvas {
+        .pdf-page-wrapper {
+            margin: 0 auto 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .pdf-page-canvas {
             max-width: 100%;
             height: auto;
             display: block;
-            margin: 0 auto 12px;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
             background: white;
         }
@@ -153,6 +164,7 @@
                     <button id="prev-page">Previous</button>
                     <button id="next-page">Next</button>
                     <span id="page-info">Loading…</span>
+                    <button id="download-pdf">Download</button>
                     <button id="zoom-out">−</button>
                     <button id="zoom-in">+</button>
                 </div>
@@ -232,60 +244,133 @@
         const searchInput = document.getElementById('pdf-search');
         const pdfViewer = document.getElementById('pdf-viewer');
         const pageInfo = document.getElementById('page-info');
+        const prevPageButton = document.getElementById('prev-page');
+        const nextPageButton = document.getElementById('next-page');
+        const downloadButton = document.getElementById('download-pdf');
 
         if (window.pdfjsLib) {
             window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
         }
 
         let pdfDoc = null;
-        let pageNum = 1;
+        let currentPageNumber = 1;
         let scale = window.innerWidth < 768 ? 1.0 : 1.2;
+        let pageEntries = [];
+        let scrollTimer = null;
+        let currentFileName = '';
 
-        function renderPage(num) {
+        function updatePageInfo(pageNumber) {
+            if (pdfDoc) {
+                pageInfo.textContent = `Page ${pageNumber} of ${pdfDoc.numPages}`;
+            } else {
+                pageInfo.textContent = 'Loading…';
+            }
+        }
+
+        function updateNavigationState() {
+            if (!pdfDoc) {
+                prevPageButton.disabled = true;
+                nextPageButton.disabled = true;
+                return;
+            }
+
+            prevPageButton.disabled = currentPageNumber <= 1;
+            nextPageButton.disabled = currentPageNumber >= pdfDoc.numPages;
+        }
+
+        function scrollToPage(pageNumber, smooth = true) {
+            const entry = pageEntries.find((item) => item.pageNumber === pageNumber);
+            if (!entry) {
+                return;
+            }
+
+            currentPageNumber = pageNumber;
+            updatePageInfo(pageNumber);
+            updateNavigationState();
+            entry.wrapper.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+        }
+
+        function updateCurrentPageFromScroll() {
+            if (!pageEntries.length) {
+                return;
+            }
+
+            const viewerTop = pdfViewer.getBoundingClientRect().top + 100;
+            let nearestEntry = pageEntries[0];
+            let smallestDistance = Number.POSITIVE_INFINITY;
+
+            pageEntries.forEach((entry) => {
+                const distance = Math.abs(entry.wrapper.getBoundingClientRect().top - viewerTop);
+                if (distance < smallestDistance) {
+                    smallestDistance = distance;
+                    nearestEntry = entry;
+                }
+            });
+
+            if (nearestEntry.pageNumber !== currentPageNumber) {
+                currentPageNumber = nearestEntry.pageNumber;
+                updatePageInfo(currentPageNumber);
+                updateNavigationState();
+            }
+        }
+
+        function renderAllPages() {
             if (!pdfDoc) {
                 return;
             }
 
-            pdfDoc.getPage(num).then((page) => {
-                const viewport = page.getViewport({ scale: scale });
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+            pdfViewer.innerHTML = '<p>Loading pages…</p>';
+            pageEntries = [];
+            const renderPromises = [];
 
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
+            for (let pageNumber = 1; pageNumber <= pdfDoc.numPages; pageNumber += 1) {
+                renderPromises.push(
+                    pdfDoc.getPage(pageNumber).then((page) => {
+                        const viewport = page.getViewport({ scale: scale });
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'pdf-page-wrapper';
+                        const canvas = document.createElement('canvas');
+                        canvas.className = 'pdf-page-canvas';
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        const context = canvas.getContext('2d');
 
-                pdfViewer.innerHTML = '';
-                pdfViewer.appendChild(canvas);
-                page.render(renderContext).promise.then(() => {
-                    pageInfo.textContent = `Page ${num} of ${pdfDoc.numPages}`;
-                });
+                        wrapper.appendChild(canvas);
+                        pdfViewer.appendChild(wrapper);
+                        pageEntries.push({ pageNumber, wrapper, canvas });
+
+                        return page.render({ canvasContext: context, viewport: viewport }).promise;
+                    })
+                );
+            }
+
+            Promise.all(renderPromises).then(() => {
+                if (pageEntries.length) {
+                    currentPageNumber = Math.min(Math.max(currentPageNumber, 1), pdfDoc.numPages);
+                    updatePageInfo(currentPageNumber);
+                    updateNavigationState();
+                    scrollToPage(currentPageNumber, false);
+                }
             }).catch((error) => {
-                pdfViewer.innerHTML = '<div class="pdf-error">Unable to load the selected page.</div>';
+                pdfViewer.innerHTML = '<div class="pdf-error">Unable to render the PDF pages.</div>';
                 console.error(error);
             });
-        }
-
-        function queueRenderPage(num) {
-            if (num >= 1 && num <= pdfDoc.numPages) {
-                pageNum = num;
-                renderPage(pageNum);
-            }
         }
 
         function showViewer(fileName) {
             listView.style.display = 'none';
             viewerView.style.display = 'block';
+            currentPageNumber = 1;
+            currentFileName = fileName;
+            pageEntries = [];
             pdfViewer.innerHTML = '<p>Loading PDF…</p>';
             pageInfo.textContent = 'Loading…';
+            updateNavigationState();
 
             if (window.pdfjsLib) {
                 window.pdfjsLib.getDocument(`chapters/${fileName}`).promise.then((pdf) => {
                     pdfDoc = pdf;
-                    renderPage(pageNum);
+                    renderAllPages();
                 }).catch((error) => {
                     pdfViewer.innerHTML = '<div class="pdf-error">The PDF could not be loaded. Please make sure the file exists and the page is being served from a web server.</div>';
                     console.error(error);
@@ -299,32 +384,57 @@
             viewerView.style.display = 'none';
             listView.style.display = 'block';
             pdfDoc = null;
-            pageNum = 1;
+            currentPageNumber = 1;
+            currentFileName = '';
+            pageEntries = [];
+            pdfViewer.innerHTML = '';
+            pageInfo.textContent = 'Loading…';
+            updateNavigationState();
         });
 
-        document.getElementById('prev-page').addEventListener('click', () => {
-            if (pdfDoc && pageNum > 1) {
-                queueRenderPage(pageNum - 1);
+        prevPageButton.addEventListener('click', () => {
+            if (pdfDoc && currentPageNumber > 1) {
+                scrollToPage(currentPageNumber - 1);
             }
         });
 
-        document.getElementById('next-page').addEventListener('click', () => {
-            if (pdfDoc && pageNum < pdfDoc.numPages) {
-                queueRenderPage(pageNum + 1);
+        nextPageButton.addEventListener('click', () => {
+            if (pdfDoc && currentPageNumber < pdfDoc.numPages) {
+                scrollToPage(currentPageNumber + 1);
             }
+        });
+
+        downloadButton.addEventListener('click', () => {
+            if (!currentFileName) {
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = `chapters/${currentFileName}`;
+            link.download = currentFileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        pdfViewer.addEventListener('scroll', () => {
+            if (scrollTimer) {
+                window.clearTimeout(scrollTimer);
+            }
+            scrollTimer = window.setTimeout(updateCurrentPageFromScroll, 80);
         });
 
         document.getElementById('zoom-out').addEventListener('click', () => {
             if (scale > 0.75) {
                 scale -= 0.25;
-                renderPage(pageNum);
+                renderAllPages();
             }
         });
 
         document.getElementById('zoom-in').addEventListener('click', () => {
             if (scale < 2.5) {
                 scale += 0.25;
-                renderPage(pageNum);
+                renderAllPages();
             }
         });
 
