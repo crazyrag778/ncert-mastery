@@ -117,10 +117,11 @@
 
     <script>
         const books = [
-            { title: 'Chemistry Part 1 (Class 11)', subject: 'Chemistry', className: 'Class 11', link: './ncert-data/kech1dd/' },
-            { title: 'Chemistry Part 2 (Class 11)', subject: 'Chemistry', className: 'Class 11', link: './ncert-data/kech2dd/' },
-            { title: 'Biology (Class 11)', subject: 'Biology', className: 'Class 11', link: './ncert-data/kebo1dd/' },
-            { title: 'Biology (Class 12)', subject: 'Biology', className: 'Class 12', link: './ncert-data/lebo1dd/' }
+            { title: 'Chemistry Part 1 (Class 11)', subject: 'Chemistry', className: 'Class 11', link: './ncert-data/kech1dd/index.html' },
+            { title: 'Chemistry Part 2 (Class 11)', subject: 'Chemistry', className: 'Class 11', link: './ncert-data/kech2dd/index.html' },
+            { title: 'Biology (Class 11)', subject: 'Biology', className: 'Class 11', link: './ncert-data/kebo1dd/index.html' },
+            { title: 'Mathematics (Class 11)', subject: 'Mathematics', className: 'Class 11', link: './ncert-data/kemh1dd/index.html' },
+            { title: 'Biology (Class 12)', subject: 'Biology', className: 'Class 12', link: './ncert-data/lebo1dd/index.html' }
         ];
 
         function renderBooks(filter = '') {
@@ -138,23 +139,28 @@
                 return;
             }
 
-            const groups = {
-                'Class 11': visibleBooks.filter((book) => book.className === 'Class 11'),
-                'Class 12': visibleBooks.filter((book) => book.className === 'Class 12')
-            };
-
-            Object.entries(groups).forEach(([className, groupBooks]) => {
-                if (!groupBooks.length) {
-                    return;
+            const groupedBySubject = visibleBooks.reduce((groups, book) => {
+                if (!groups[book.subject]) {
+                    groups[book.subject] = [];
                 }
+                groups[book.subject].push(book);
+                return groups;
+            }, {});
 
+            Object.entries(groupedBySubject).sort(([subjectA], [subjectB]) => subjectA.localeCompare(subjectB)).forEach(([subject, subjectBooks]) => {
                 const section = document.createElement('div');
                 section.className = 'section-block';
-                section.innerHTML = `<h3 class="w3-margin-bottom w3-border-bottom w3-border-theme w3-padding-bottom">${className}</h3>`;
+                const classNames = [...new Set(subjectBooks.map((book) => book.className))].join(' • ');
+                section.innerHTML = `
+                    <div class="w3-margin-bottom w3-border-bottom w3-border-theme w3-padding-bottom">
+                        <h3 class="w3-margin-bottom">${subject}</h3>
+                        <p class="w3-small w3-text-grey">${classNames}</p>
+                    </div>
+                `;
                 const grid = document.createElement('div');
                 grid.className = 'book-list';
 
-                groupBooks.forEach((book) => {
+                subjectBooks.forEach((book) => {
                     const card = document.createElement('div');
                     card.className = 'w3-card w3-hover-theme';
                     card.innerHTML = `
@@ -162,7 +168,7 @@
                             <h4>${book.title}</h4>
                         </div>
                         <div class="w3-container w3-padding-16">
-                            <p class="w3-text-grey">Subject: ${book.subject}</p>
+                            <p class="w3-text-grey">Class: ${book.className}</p>
                             <a class="w3-button w3-theme-d2 w3-round" href="${book.link}">Open Book</a>
                         </div>
                     `;
