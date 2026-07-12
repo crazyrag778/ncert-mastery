@@ -239,7 +239,7 @@
                         <p class="w3-small w3-text-grey" style="font-weight: 700;">${item.file}</p>
                     </div>
                     <div class="w3-padding">
-                        <button class="w3-button w3-theme-d2 w3-round" data-file="${item.file}">Open PDF</button>
+                        <button class="w3-button w3-theme-d2 w3-round" data-file="${item.file}">View</button>
                     </div>
                 `;
                 list.appendChild(card);
@@ -392,14 +392,18 @@
                 return;
             }
 
+            const pageWindowSize = window.innerWidth < 768 ? 3 : 4;
+            const startPage = Math.max(1, currentPageNumber - 1);
+            const endPage = Math.min(pdfDoc.numPages, currentPageNumber + pageWindowSize - 1);
+
             pdfViewer.innerHTML = '<p>Loading pages…</p>';
             pageEntries = [];
             const renderPromises = [];
 
-            for (let pageNumber = 1; pageNumber <= pdfDoc.numPages; pageNumber += 1) {
+            for (let pageNumber = startPage; pageNumber <= endPage; pageNumber += 1) {
                 renderPromises.push(
                     pdfDoc.getPage(pageNumber).then((page) => {
-                        const viewport = page.getViewport({ scale: scale });
+                        const viewport = page.getViewport({ scale: Math.max(0.5, Math.min(scale * 0.8, 1.2)) });
                         const wrapper = document.createElement('div');
                         wrapper.className = 'pdf-page-wrapper';
                         wrapper.classList.toggle('w3-grayscale', readingMode);
@@ -534,7 +538,7 @@
             if (scrollTimer) {
                 window.clearTimeout(scrollTimer);
             }
-            scrollTimer = window.setTimeout(updateCurrentPageFromScroll, 80);
+            scrollTimer = window.setTimeout(updateCurrentPageFromScroll, 150);
         });
 
         document.getElementById('zoom-out').addEventListener('click', () => {
