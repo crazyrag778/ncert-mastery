@@ -10,3 +10,5 @@ Class 11-
 class 12:
   Biology:
         = lebo1dd
+  Mathematics
+     Part1=lemh1dd
