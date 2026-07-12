@@ -15,6 +15,7 @@
     <style>
         body {
             margin: 0;
+            background: #f5f7fb;
         }
 
         .page-shell {
@@ -58,42 +59,12 @@
             width: 100%;
         }
 
-        .class-groups {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr);
-            gap: 0;
-            width: 100%;
-            align-items: start;
-        }
-
-        .class-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            min-width: 0;
-            padding: 0 8px;
-        }
-
-        .class-group-header {
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .class-group-divider {
-            width: 1px;
-            border-left: 1px solid;
-            margin: 0 6px;
-            align-self: stretch;
-            justify-self: center;
-            min-height: 100%;
-        }
-
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Montenegrin Gothic One', 'Yuyu Sans', serif;
         }
     </style>
 </head>
-<body class="montenegrin-gothic-one-regular w3-theme-l5">
+<body class="montenegrin-gothic-one-regular">
     <div class="w3-container w3-theme-d3">
         <div class="w3-bar w3-theme-d3">
             <span class="w3-bar-item w3-xxxlarge">NCERT Mastery</span>
@@ -118,7 +89,7 @@
                         <h3 class="w3-margin-top">Available Books</h3>
                     </div>
                     <div class="w3-col s12 m4">
-                        <input id="book-search" class="w3-theme-l5 w3-border-theme" style="border: 1px solid; border-radius: 6px; padding: 8px 12px; width: 100%;" type="text" placeholder="Search books...">
+                        <input id="book-search" class="w3-theme-l5" style="border: 1px solid #c9aaa2; border-radius: 6px; padding: 8px 12px; width: 100%;" type="text" placeholder="Search books...">
                     </div>
                 </div>
                 <div id="book-list" class="book-list"></div>
@@ -132,13 +103,13 @@
             { title: 'Chemistry Part 2 (Class 11)', subject: 'Chemistry', className: 'Class 11', link: './ncert-data/kech2dd/index.html' },
             { title: 'Biology (Class 11)', subject: 'Biology', className: 'Class 11', link: './ncert-data/kebo1dd/index.html' },
             { title: 'Mathematics (Class 11)', subject: 'Mathematics', className: 'Class 11', link: './ncert-data/kemh1dd/index.html' },
+            { title: 'Physics Part 1 (Class 11)', subject: 'Physics', className: 'Class 11', link: './ncert-data/keph1dd/read.html' },
+            { title: 'Physics Part 2 (Class 11)', subject: 'Physics', className: 'Class 11', link: './ncert-data/keph2dd/read.html' },
             { title: 'Biology (Class 12)', subject: 'Biology', className: 'Class 12', link: './ncert-data/lebo1dd/index.html' },
             { title: 'Mathematics Part 1 (Class 12)', subject: 'Mathematics', className: 'Class 12', link: './ncert-data/lemh1dd/index.html' },
             { title: 'Mathematics Part 2 (Class 12)', subject: 'Mathematics', className: 'Class 12', link: './ncert-data/lemh2dd/read.html' },
             { title: 'Chemistry Part 1 (Class 12)', subject: 'Chemistry', className: 'Class 12', link: './ncert-data/lech1dd/read.html' },
             { title: 'Chemistry Part 2 (Class 12)', subject: 'Chemistry', className: 'Class 12', link: './ncert-data/lech2dd/read.html' },
-            { title: 'Physics Part 1 (Class 11)', subject: 'Physics', className: 'Class 11', link: './ncert-data/keph1dd/read.html' },
-            { title: 'Physics Part 2 (Class 11)', subject: 'Physics', className: 'Class 11', link: './ncert-data/keph2dd/read.html' },
             { title: 'Physics Part 1 (Class 12)', subject: 'Physics', className: 'Class 12', link: './ncert-data/leph1dd/read.html' },
             { title: 'Physics Part 2 (Class 12)', subject: 'Physics', className: 'Class 12', link: './ncert-data/leph2dd/read.html' }
         ];
@@ -154,7 +125,7 @@
             });
 
             if (!visibleBooks.length) {
-                list.innerHTML = '<div class="w3-theme-l1 w3-border-theme" style="padding: 16px; border: 1px solid;">No books matched your search.</div>';
+                list.innerHTML = '<div class="w3-theme-l1" style="padding: 16px; border: 1px solid #c9aaa2;">No books matched your search.</div>';
                 return;
             }
 
@@ -179,57 +150,20 @@
                 const grid = document.createElement('div');
                 grid.className = 'book-list';
 
-                const classGroups = subjectBooks.reduce((groups, book) => {
-                    if (!groups[book.className]) {
-                        groups[book.className] = [];
-                    }
-                    groups[book.className].push(book);
-                    return groups;
-                }, {});
-
-                const classGroupEntries = Object.entries(classGroups);
-                const classGroupsContainer = document.createElement('div');
-                classGroupsContainer.className = 'class-groups';
-
-                if (classGroupEntries.length > 1) {
-                    classGroupsContainer.style.gridTemplateColumns = 'minmax(0, 1fr) 1px minmax(0, 1fr)';
-                }
-
-                classGroupEntries.forEach(([className, classBooks], index) => {
-                    if (index > 0 && classGroupEntries.length > 1) {
-                        const divider = document.createElement('div');
-                        divider.className = 'class-group-divider w3-border-theme';
-                        classGroupsContainer.appendChild(divider);
-                    }
-
-                    const group = document.createElement('div');
-                    group.className = 'class-group';
-
-                    const groupHeader = document.createElement('div');
-                    groupHeader.className = 'class-group-header';
-                    groupHeader.style.color = 'black';
-                    groupHeader.textContent = className;
-                    group.appendChild(groupHeader);
-
-                    classBooks.forEach((book) => {
-                        const card = document.createElement('div');
-                        card.className = 'w3-card w3-hover-theme';
-                        card.innerHTML = `
-                            <div class="w3-container w3-theme-d2">
-                                <h4>${book.title}</h4>
-                            </div>
-                            <div class="w3-container w3-padding-16">
-                                <p class="w3-text-grey">Class: ${book.className}</p>
-                                <a class="w3-button w3-theme-d2 w3-round" href="${book.link}">Open Book</a>
-                            </div>
-                        `;
-                        group.appendChild(card);
-                    });
-
-                    classGroupsContainer.appendChild(group);
+                subjectBooks.forEach((book) => {
+                    const card = document.createElement('div');
+                    card.className = 'w3-card w3-hover-theme';
+                    card.innerHTML = `
+                        <div class="w3-container w3-theme-d2">
+                            <h4>${book.title}</h4>
+                        </div>
+                        <div class="w3-container w3-padding-16">
+                            <p class="w3-text-grey">Class: ${book.className}</p>
+                            <a class="w3-button w3-theme-d2 w3-round" href="${book.link}">Open Book</a>
+                        </div>
+                    `;
+                    grid.appendChild(card);
                 });
-
-                grid.appendChild(classGroupsContainer);
 
                 section.appendChild(grid);
                 list.appendChild(section);
