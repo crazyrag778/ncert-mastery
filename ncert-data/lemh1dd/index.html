@@ -462,7 +462,15 @@
             for (let pageNumber = startPage; pageNumber <= endPage; pageNumber += 1) {
                 renderPromises.push(
                     pdfDoc.getPage(pageNumber).then((page) => {
-                        const viewport = page.getViewport({ scale: Math.max(0.5, Math.min(scale * 0.8, 1.2)) });
+                        const viewportHeight = window.innerHeight - 220;
+                        const pageViewport = page.getViewport({ scale: 1 });
+                        const widthScale = Math.max(240, pdfViewer.clientWidth - 24) / pageViewport.width;
+                        const heightScale = Math.max(240, viewportHeight) / pageViewport.height;
+                        const fitScale = Math.min(widthScale, heightScale) * scale;
+                        const pixelRatio = Math.min(2, Math.max(1.25, window.devicePixelRatio || 1));
+                        const viewport = page.getViewport({
+                            scale: Math.max(1.2, Math.min(fitScale * pixelRatio, 4.5))
+                        });
                         const wrapper = document.createElement('div');
                         wrapper.className = 'pdf-page-wrapper';
                         wrapper.classList.toggle('reading-mode-active', readingMode);
